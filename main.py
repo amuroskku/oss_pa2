@@ -74,3 +74,31 @@ for y, row in enumerate(level):
         if tile == '@':
             player_pos = [x, y]
 print(player_pos)
+
+def run():
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    move_player(0, -1)
+                elif event.key == pygame.K_DOWN:
+                    move_player(0, 1)
+                elif event.key == pygame.K_LEFT:
+                    move_player(-1, 0)
+                elif event.key == pygame.K_RIGHT:
+                    move_player(1, 0)
+        
+        screen.fill(WHITE)
+        draw_level()
+        draw_player()
+        
+        pygame.display.flip()
+
+    pygame.quit()
+    sys.exit()
+    
+if __name__ == "__main__":
+    run()
