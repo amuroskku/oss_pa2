@@ -2,46 +2,27 @@ import pygame
 import sys
 import random
 
-# 화면에 레벨을 표시함
-def draw_level():
-    for y, row in enumerate(level):
-        for x, tile in enumerate(row):
-            if tile == '#':
-                pygame.draw.rect(screen, (0, 0, 0), (x * tile_size, y * tile_size, tile_size, tile_size))
-            elif tile == '.':
-                pygame.draw.circle(screen, (255, 0, 0), (x * tile_size + tile_size // 2, y * tile_size + tile_size // 2), tile_size // 4)
-            elif tile == '$':
-                pygame.draw.rect(screen, (0, 255, 0), (x * tile_size, y * tile_size, tile_size, tile_size))
+# Pygame 초기화
+pygame.init()
 
-#화면에 플레이어를 표시함
-def draw_player():
-    pygame.draw.circle(screen, (0, 0, 255), (player_pos[0] * tile_size + tile_size // 2, player_pos[1] * tile_size + tile_size // 2), tile_size // 2)
+# 화면 크기 설정
+screen_width = 1000
+screen_height = 1000
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Sokoban")
 
-#플레이어의 이동을 정의
-def move_player(dx, dy):
-    new_x = player_pos[0] + dx
-    new_y = player_pos[1] + dy
-    
-    if level[new_y][new_x] in " .":
-        # player가 있던 자리 공백으로 변환
-        level[player_pos[1]] = level[player_pos[1]][:player_pos[0]] + " " + level[player_pos[1]][player_pos[0]+1:]
-        #player 이동
-        player_pos[0] = new_x
-        player_pos[1] = new_y
-        level[player_pos[1]] = level[player_pos[1]][:player_pos[0]] + "@" + level[player_pos[1]][player_pos[0]+1:]
-    elif level[new_y][new_x] == '$':
-        box_new_x = new_x + dx
-        box_new_y = new_y + dy
-        if level[box_new_y][box_new_x] in " .":
-            # 상자 이동
-            level[new_y] = level[new_y][:new_x] + ' ' + level[new_y][new_x+1:]
-            level[box_new_y] = level[box_new_y][:box_new_x] + '$' + level[box_new_y][box_new_x+1:]
-            level[player_pos[1]] = level[player_pos[1]][:player_pos[0]] + " " + level[player_pos[1]][player_pos[0]+1:]
-            player_pos[0] = new_x
-            player_pos[1] = new_y
-            level[player_pos[1]] = level[player_pos[1]][:player_pos[0]] + "@" + level[player_pos[1]][player_pos[0]+1:]
+# 타일 크기 설정
+tile_size = 100
 
-############################################################ For Test ############################################################
+# 색상 설정
+WHITE = (255, 255, 255)
+
+# 이미지 로드
+player_image = pygame.image.load('player.png')
+wall_image = pygame.image.load('wall.png')
+box_image = pygame.image.load('box.png')
+goal_image = pygame.image.load('goal.png')
+floor_image = pygame.image.load('floor.png')
 
 # 맵 데이터
 level = []
@@ -56,6 +37,13 @@ BOX = '$'
 GOAL = '.'
 BOX_ON_GOAL = '*'
 PLAYER_ON_GOAL = '+'
+
+# 플레이어 위치 찾기
+player_pos = [0, 0]
+for y, row in enumerate(level):
+    for x, tile in enumerate(row):
+        if tile == '@':
+            player_pos = [x, y]
 
 def create_empty_map(width, height):
     return [[WALL if x == 0 or x == width - 1 or y == 0 or y == height - 1 else FLOOR for x in range(width)] for y in range(height)]
@@ -115,58 +103,66 @@ def generate_sokoban_map(width, height, num_goals):
         print(str(type(player_pos)) + "generate_sokoban_map")
         map_data = place_boxes(map_data, goals)
         return map_data, player_pos
-    
+
 level, player_pos = generate_sokoban_map(10,10,3)
 for i in level:
     print(i)
 print(player_pos)
-#############################################################################################################################
 
+# 화면에 레벨을 표시함
+def draw_level(map_data):
+    for y, row in enumerate(map_data):
+        for x, tile in enumerate(row):
+            screen.blit(floor_image, (x * tile_size, y * tile_size))
+            if tile == WALL:
+                screen.blit(wall_image, (x * tile_size, y * tile_size))
+            elif tile == GOAL:
+                screen.blit(goal_image, (x * tile_size, y * tile_size))
+            elif tile == BOX:
+                screen.blit(box_image, (x * tile_size, y * tile_size))
+                
+#화면에 플레이어를 표시함
+def draw_player():
+    screen.blit(player_image, (player_pos[0] * tile_size, player_pos[1] * tile_size))
 
-# Pygame 초기화
-pygame.init()
+#플레이어의 이동을 정의
+def move_player(dx, dy):
+    global level
+    global goal_count
+    new_x = player_pos[0] + dx
+    new_y = player_pos[1] + dy
+    
+    if level[new_y][new_x] in " .":
+        # player가 있던 자리 공백으로 변환
+        for i in level:
+            print(i)
+        print(level[player_pos[1]][:player_pos[0]])
+        print(level[player_pos[1]][player_pos[0]+1:])
+        level[player_pos[1]][player_pos[0]] = " "
+        #player 이동
+        player_pos[0] = new_x
+        player_pos[1] = new_y
+        level[player_pos[1]][player_pos[0]] = "@"
+    elif level[new_y][new_x] == '$':
+        box_new_x = new_x + dx
+        box_new_y = new_y + dy
+        if level[box_new_y][box_new_x] in " .":
+            level[new_y][new_x] = ' '
+            level[player_pos[1]][player_pos[0]] = " "
+            player_pos[0] = new_x
+            player_pos[1] = new_y
+            level[player_pos[1]][player_pos[0]] = "@"
+            # 상자 이동
+            if level[box_new_y][box_new_x] == " ":
+                level[box_new_y][box_new_x] = '$'
+            elif level[box_new_y][box_new_x] == ".":
+                level[box_new_y][box_new_x] = '*'
+                goal_count -= 1
 
-# 화면 크기 설정
-screen_width = 700
-screen_height = 500
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Sokoban")
-
-# 색상 설정
-WHITE = (255, 255, 255)
-
-# 이미지 로드
-player_image = pygame.image.load('player.png')
-wall_image = pygame.image.load('wall.png')
-box_image = pygame.image.load('box.png')
-goal_image = pygame.image.load('goal.png')
-floor_image = pygame.image.load('floor.png')
-
-# 맵 데이터
-level = [
-    "#######",
-    "#     #",
-    "#.$ # #",
-    "# @   #",
-    "#######"
-]
-
-#목표 개수 설정
-n_goal = 1
-
-# 타일 크기 설정
-tile_size = 100
-
-# 플레이어 위치 찾기
-player_pos = [0, 0]
-for y, row in enumerate(level):
-    for x, tile in enumerate(row):
-        if tile == '@':
-            player_pos = [x, y]
-print(player_pos)
 
 def run():
     running = True
+    level, player_pos = generate_sokoban_map(10, 10, 3)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -180,15 +176,14 @@ def run():
                     move_player(-1, 0)
                 elif event.key == pygame.K_RIGHT:
                     move_player(1, 0)
-        
+
         screen.fill(WHITE)
-        draw_level()
+        draw_level(level)
         draw_player()
-        
         pygame.display.flip()
 
     pygame.quit()
     sys.exit()
-    
+
 if __name__ == "__main__":
     run()
