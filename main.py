@@ -135,6 +135,13 @@ pygame.display.set_caption("Sokoban")
 # 색상 설정
 WHITE = (255, 255, 255)
 
+# 이미지 로드
+player_image = pygame.image.load('player.png')
+wall_image = pygame.image.load('wall.png')
+box_image = pygame.image.load('box.png')
+goal_image = pygame.image.load('goal.png')
+floor_image = pygame.image.load('floor.png')
+
 # 맵 데이터
 level = [
     "#######",
