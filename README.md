@@ -1,13 +1,12 @@
-# 5점/10점 짜리 프로젝트
-
 # 구현 목표
 ###  본 프로젝트는 1982년 발매된 "소코반(そうこばん)" 게임이 목적이며, 모든 구멍에 모든 상자를 밀어넣어 퍼즐을 클리어 하는 것이 게임의 목표입니다. 모든 구멍이 채워질 경우 승리합니다.
 
 # 구현 기능
 
-* pygame, box2d 기반 게임 board(환경) 구현
-* 키보드 입력으로 과일 조준 기능
-* 동일 과일이 충돌 시 합쳐지는 기능
+* pygame 기반 게임 board(환경) 구현
+* 플레이어 조작 기능
+* 여러가지 phase를 구분하여 게임 화면과 시작 화면간의 전환을 구현
+* 구성요소와 플레이어의 위치 등을 포함하는 게임 맵의 자동 생성 기능 구현
 
 # Reference
 [1] https://github.com/pygame/pygame "pygame"
@@ -52,7 +51,7 @@ pip3 install pygame
 # 실행 예시
 ![oss](https://github.com/Evanthekim/oss_personal_project_phase1/assets/60501545/6ab0ee7f-2f39-4392-b7c6-4b9865216fd8)
 
-# 코드 설명
+# 주요 코드 설명
 ## main.py
 ### method generate_sokoban_map()
 - Description : sokoban 맵을 자동으로 생성하는 함수
