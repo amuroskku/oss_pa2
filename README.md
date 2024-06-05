@@ -50,25 +50,35 @@ pip3 install pygame
 ### MacOS
 
 # 실행 예시
-<span style="color:red">동영상 업로드 시 gif로 변환 후 링크를 삽입</span>
-<span style="color:red">아래 홈페이지 참고 : https://onlydev.tistory.com/15 </span>
-
 ![oss](https://github.com/Evanthekim/oss_personal_project_phase1/assets/60501545/6ab0ee7f-2f39-4392-b7c6-4b9865216fd8)
 
 # 코드 설명
 ## main.py
-### class WatermelonGame
-- Description : watermelon 게임을 수행하는 메인 클래스
-  1. Def __init__ : 최초 게임을 초기화하는 단계, screen, world, contact_listener, watermelons(과일 body를 저장) 등을 초기화함.
-  2. Def create_ground : 아래, 좌, 우의 벽(바운더리)를 생성하여 과일이 화면밖으로 나가는 것을 방지
+### method generate_sokoban_map()
+- Description : sokoban 맵을 자동으로 생성하는 함수
+  1. create_empty_map(width, height) : 게임 맵의 크기를 받아 해당하는 크기로 이중 리스트를 초기화 한다. 또한, 가장자리를 벽으로 채워 넣는다.
+  2. place_player_and_goals(map_data, num_goals) : 생성된 맵에 플레이어와 목표지점인 구멍을 위치시킨다.
+  3. place_boxes(map_data, goals) : 맵의 빈 공간에 상자를 위치시킨다. 이 때 상자의 개수는 구멍의 개수와 동일하며, 상자는 벽에 달라붙지 않게 한다.
 
-### class ContactListener
-- Description : 과일 간의 충돌을 탐지하는 ContactListener
-  1. Def BeginContact() : 충돌 시 자동으로 실행되는 box2d 함수, 충돌 된 두 과일의 body를 to_destroy 어레이에 저장한다.
+### method move_player()
+- Description : 플레이어의 움직임을 정의하는 함수
+  1. 이동 방향에 상자가 있는 경우 : 상자를 플레이어와 함께 이동한다.
+  2. 이동 방향에 아무 것도 없는 경우 : 플레이어만 움직인다.
+  3. 이동 방향에 구멍 혹은 벽이 있는 경우 : 이동하지 않는다.
+
+### method run()
+- Description : 게임 루프를 정의하는 함수
+  1. game_state : 현재 게임이 어느 phase에 있는지 저장하는 변수. 종류에 따라 다른 화면을 표시한다.
+
+   * game_state == STATE_MENU : 시작 메뉴를 표시한다. enter 키를 누를 경우 게임 화면으로 전환한다.
+   * game_state == STATE_CONTROLS : 조작 방법과 룰을 표시한다. esc 키를 누를 경우 시작 메뉴로 돌아간다.
+   * game_state == STATE_GAME : 게임 화면을 표시한다. esc 키를 누를 경우 시작 메뉴로 돌아간다.
+
+   2. 사용자의 방향키 입력에 따라 다른 방향으로 플레이어를 움직인다.
+   3. game_state에 따라 서로 다른 함수를 호출하여 다른 화면을 표시한다.
  
 
 # TODO List
-* 점수 계산하기
-* 게임 끝나는 조건 추가하기
-* 좌우 키를 누르고 있으면 빠르게 이동하기
-* start, end, restart, menu 버튼 추가하기
+* 백스페이스 키를 누를 경우, 이전 행동으로 돌아가는 기능 추가하기
+* 맵 가장자리 뿐만 아니라 내부에도 벽으로 방해 구조물 추가하기
+* 난이도를 분류하여 단계별로 구조가 복잡해지거나 더 많은 구멍을 채워야 하는 등 차별점 두기

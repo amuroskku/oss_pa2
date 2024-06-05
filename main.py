@@ -16,12 +16,12 @@ pygame.display.set_caption("Sokoban")
 WHITE = (255, 255, 255)
 
 # 이미지 로드
-player_image = pygame.image.load('player.png')
-wall_image = pygame.image.load('wall.png')
-box_image = pygame.image.load('box.png')
-goal_image = pygame.image.load('goal.png')
-floor_image = pygame.image.load('floor.png')
-box_on_goal_image = pygame.image.load('box_with_x.png')
+player_image = pygame.image.load('./assets/player.png')
+wall_image = pygame.image.load('./assets/wall.png')
+box_image = pygame.image.load('./assets/box.png')
+goal_image = pygame.image.load('./assets/goal.png')
+floor_image = pygame.image.load('./assets/floor.png')
+box_on_goal_image = pygame.image.load('./assets/box_with_x.png')
 
 # 타일 크기 설정
 tile_size = 100
@@ -127,7 +127,7 @@ def move_player(dx, dy):
     new_x = player_pos[0] + dx
     new_y = player_pos[1] + dy
     
-    if level[new_y][new_x] in " .":
+    if level[new_y][new_x] == " ":
         # player가 있던 자리 공백으로 변환
         level[player_pos[1]][player_pos[0]] = " "
         #player 이동
@@ -191,46 +191,52 @@ def show_controls():
     pygame.display.flip()
 
 # 메인 루프
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if game_state == STATE_MENU:
-                if event.key == pygame.K_RETURN:  # Enter 키를 눌러 게임 시작
-                    level, player_pos = generate_sokoban_map(10, 10, 3)
-                    game_state = STATE_GAME
-                elif event.key == pygame.K_h:  # H 키를 눌러 조작법 안내
-                    game_state = STATE_CONTROLS
-            elif game_state == STATE_CONTROLS:
-                if event.key == pygame.K_ESCAPE:  # ESC 키를 눌러 메뉴로 돌아감
-                    game_state = STATE_MENU
-            elif game_state == STATE_GAME:
-                if event.key == pygame.K_ESCAPE:  # ESC 키를 눌러 메뉴로 돌아감
-                    game_state = STATE_MENU
-                elif event.key == pygame.K_UP:
-                    move_player(0, -1)
-                    is_win()
-                elif event.key == pygame.K_DOWN:
-                    move_player(0, 1)
-                    is_win()
-                elif event.key == pygame.K_LEFT:
-                    move_player(-1, 0)
-                    is_win()
-                elif event.key == pygame.K_RIGHT:
-                    move_player(1, 0)
-                    is_win()
+def run():
+    global level
+    global game_state
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if game_state == STATE_MENU:
+                    if event.key == pygame.K_RETURN:  # Enter 키를 눌러 게임 시작
+                        level, player_pos = generate_sokoban_map(10, 10, 3)
+                        game_state = STATE_GAME
+                    elif event.key == pygame.K_h:  # H 키를 눌러 조작법 안내
+                        game_state = STATE_CONTROLS
+                elif game_state == STATE_CONTROLS:
+                    if event.key == pygame.K_ESCAPE:  # ESC 키를 눌러 메뉴로 돌아감
+                        game_state = STATE_MENU
+                elif game_state == STATE_GAME:
+                    if event.key == pygame.K_ESCAPE:  # ESC 키를 눌러 메뉴로 돌아감
+                        game_state = STATE_MENU
+                    elif event.key == pygame.K_UP:
+                        move_player(0, -1)
+                        is_win()
+                    elif event.key == pygame.K_DOWN:
+                        move_player(0, 1)
+                        is_win()
+                    elif event.key == pygame.K_LEFT:
+                        move_player(-1, 0)
+                        is_win()
+                    elif event.key == pygame.K_RIGHT:
+                        move_player(1, 0)
+                        is_win()
 
-    screen.fill(WHITE)
-    if game_state == STATE_MENU:
-        show_menu()
-    elif game_state == STATE_CONTROLS:
-        show_controls()
-    elif game_state == STATE_GAME:
-        draw_level(level)
-        draw_player()
-        pygame.display.flip()
+        screen.fill(WHITE)
+        if game_state == STATE_MENU:
+            show_menu()
+        elif game_state == STATE_CONTROLS:
+            show_controls()
+        elif game_state == STATE_GAME:
+            draw_level(level)
+            draw_player()
+            pygame.display.flip()
 
-pygame.quit()
-sys.exit()
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    run()
