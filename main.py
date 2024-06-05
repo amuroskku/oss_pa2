@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 # 화면에 레벨을 표시함
 def draw_level():
@@ -39,6 +40,88 @@ def move_player(dx, dy):
             player_pos[0] = new_x
             player_pos[1] = new_y
             level[player_pos[1]] = level[player_pos[1]][:player_pos[0]] + "@" + level[player_pos[1]][player_pos[0]+1:]
+
+############################################################ For Test ############################################################
+
+# 맵 데이터
+level = []
+player_pos = [0, 0]
+goal_count = 0
+
+# 맵 타일 종류
+WALL = '#'
+FLOOR = ' '
+PLAYER = '@'
+BOX = '$'
+GOAL = '.'
+BOX_ON_GOAL = '*'
+PLAYER_ON_GOAL = '+'
+
+def create_empty_map(width, height):
+    return [[WALL if x == 0 or x == width - 1 or y == 0 or y == height - 1 else FLOOR for x in range(width)] for y in range(height)]
+
+def place_player_and_goals(map_data, num_goals):
+    global player_pos
+    free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR]
+    random.shuffle(free_spaces)
+
+    # 플레이어 위치 선정
+    print(str(type(player_pos)) + "place_player_and_goals")
+    temp_pos = list(free_spaces.pop())
+    player_pos[0] = temp_pos[0]
+    player_pos[1] = temp_pos[1]
+    print(str(type(player_pos)) + "place_player_and_goals")
+    map_data[player_pos[0]][player_pos[1]] = PLAYER
+
+    # 목표 지점 선정
+    goals = []
+    for _ in range(num_goals):
+        goal_pos = free_spaces.pop()
+        map_data[goal_pos[0]][goal_pos[1]] = GOAL
+        goals.append(goal_pos)
+    for i in map_data:
+        print(i)
+    return player_pos, goals
+
+def is_adjacent_to_wall(y, x, map_data):
+    """Check if the position (y, x) is adjacent to a wall."""
+    adjacent_positions = [(y-1, x), (y+1, x), (y, x-1), (y, x+1)]
+    return any(map_data[ny][nx] == WALL for ny, nx in adjacent_positions)
+
+def place_boxes(map_data, goals):
+    global goal_count
+    
+    free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR and not is_adjacent_to_wall(y, x, map_data)]
+    for i in map_data:
+        print(i)
+    print(free_spaces)
+    random.shuffle(free_spaces)
+
+    for goal in goals:
+        box_pos = free_spaces.pop()
+        map_data[box_pos[0]][box_pos[1]] = BOX
+        goal_count += 1
+    
+    for i in map_data:
+        print(i)
+    return map_data
+
+def generate_sokoban_map(width, height, num_goals):
+    global player_pos
+    while True:
+        map_data = create_empty_map(width, height)
+        print(str(type(player_pos)) + "generate_sokoban_map")
+        player_pos, goals = place_player_and_goals(map_data, num_goals)
+        print(str(type(player_pos)) + "generate_sokoban_map")
+        map_data = place_boxes(map_data, goals)
+        return map_data, player_pos
+    
+level, player_pos = generate_sokoban_map(10,10,3)
+for i in level:
+    print(i)
+print(player_pos)
+#############################################################################################################################
+
 
 # Pygame 초기화
 pygame.init()
