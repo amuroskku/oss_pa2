@@ -53,7 +53,7 @@ pip3 install pygame
 <span style="color:red">동영상 업로드 시 gif로 변환 후 링크를 삽입</span>
 <span style="color:red">아래 홈페이지 참고 : https://onlydev.tistory.com/15 </span>
 
-![example](https://github.com/RmKuma/oss_personal_project_phase1/assets/20412048/98ecfe0c-34c5-4592-86e9-defded705a36)
+![oss](https://github.com/Evanthekim/oss_personal_project_phase1/assets/60501545/6ab0ee7f-2f39-4392-b7c6-4b9865216fd8)
 
 # 코드 설명
 ## main.py

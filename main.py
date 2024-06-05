@@ -49,20 +49,20 @@ level = []
 player_pos = [0, 0]
 goal_count = 0
 
+#비어있는 맵을 생성
 def create_empty_map(width, height):
     return [[WALL if x == 0 or x == width - 1 or y == 0 or y == height - 1 else FLOOR for x in range(width)] for y in range(height)]
 
+#비어있는 맵에 플레이어와 구멍을 배치
 def place_player_and_goals(map_data, num_goals):
     global player_pos
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR]
     random.shuffle(free_spaces)
 
     # 플레이어 위치 선정
-    print(str(type(player_pos)) + "place_player_and_goals")
     temp_pos = list(free_spaces.pop())
     player_pos[0] = temp_pos[0]
     player_pos[1] = temp_pos[1]
-    print(str(type(player_pos)) + "place_player_and_goals")
     map_data[player_pos[0]][player_pos[1]] = PLAYER
 
     # 목표 지점 선정
@@ -71,22 +71,19 @@ def place_player_and_goals(map_data, num_goals):
         goal_pos = free_spaces.pop()
         map_data[goal_pos[0]][goal_pos[1]] = GOAL
         goals.append(goal_pos)
-    for i in map_data:
-        print(i)
     return player_pos, goals
 
+#대상 위치가 벽에 붙어있는지 확인
 def is_adjacent_to_wall(y, x, map_data):
     """Check if the position (y, x) is adjacent to a wall."""
     adjacent_positions = [(y-1, x), (y+1, x), (y, x-1), (y, x+1)]
     return any(map_data[ny][nx] == WALL for ny, nx in adjacent_positions)
 
+#벽에 붙어있지 않은 빈 공간에 상자를 위치
 def place_boxes(map_data, goals):
     global goal_count
     
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR and not is_adjacent_to_wall(y, x, map_data)]
-    for i in map_data:
-        print(i)
-    print(free_spaces)
     random.shuffle(free_spaces)
 
     for goal in goals:
@@ -94,20 +91,18 @@ def place_boxes(map_data, goals):
         map_data[box_pos[0]][box_pos[1]] = BOX
         goal_count += 1
     
-    for i in map_data:
-        print(i)
     return map_data
 
+# 맵을 자동으로 생성함
 def generate_sokoban_map(width, height, num_goals):
     global player_pos
     while True:
         map_data = create_empty_map(width, height)
-        print(str(type(player_pos)) + "generate_sokoban_map")
         player_pos, goals = place_player_and_goals(map_data, num_goals)
-        print(str(type(player_pos)) + "generate_sokoban_map")
         map_data = place_boxes(map_data, goals)
         return map_data, player_pos
 
+# 화면에 레벨을 표시함
 def draw_level(map_data):
     for y, row in enumerate(map_data):
         for x, tile in enumerate(row):
@@ -120,10 +115,12 @@ def draw_level(map_data):
                 screen.blit(box_image, (x * tile_size, y * tile_size))
             elif tile == BOX_ON_GOAL:
                 screen.blit(box_on_goal_image, (x * tile_size, y * tile_size))
-
+                
+#화면에 플레이어를 표시함
 def draw_player():
     screen.blit(player_image, (player_pos[0] * tile_size, player_pos[1] * tile_size))
-
+    
+#플레이어의 이동을 정의
 def move_player(dx, dy):
     global level
     global goal_count
@@ -132,10 +129,6 @@ def move_player(dx, dy):
     
     if level[new_y][new_x] in " .":
         # player가 있던 자리 공백으로 변환
-        for i in level:
-            print(i)
-        print(level[player_pos[1]][:player_pos[0]])
-        print(level[player_pos[1]][player_pos[0]+1:])
         level[player_pos[1]][player_pos[0]] = " "
         #player 이동
         player_pos[0] = new_x
@@ -157,6 +150,7 @@ def move_player(dx, dy):
                 level[box_new_y][box_new_x] = '*'
                 goal_count -= 1
 
+#플레이어가 이겼는지 판단함
 def is_win():
     global goal_count
     if goal_count == 0:
@@ -167,13 +161,12 @@ def is_win():
         pygame.time.wait(2000)  # 2초간 대기
         reset_game()  # 게임 초기화 함수 호출
 
+#새로운 맵을 생성하여 게임 리셋
 def reset_game():
-    global level, player_pos, previous_moves
+    global level, player_pos
     level, player_pos = generate_sokoban_map(10, 10, 3)
-    previous_moves.clear()  # 이전 행동 기록 초기화
 
-previous_moves = deque()
-
+#시작 메뉴를 표시
 def show_menu():
     font = pygame.font.SysFont(None, 50)
     text = ["Press Enter To Start Game","To See How To Play, Press H"]
@@ -185,9 +178,10 @@ def show_menu():
         screen.blit(label[line],(position[0],position[1]+(line*50)+(15*line)))
     pygame.display.flip()
 
+#조작 방법등을 표시
 def show_controls():
     font = pygame.font.SysFont(None, 32)
-    text = ["                                                              Sokoban Rules","1. Objective: Push all the boxes into the holes.", "2. Winning Condition: Fill all the holes with boxes to win.", "3. New Map: A new map will be generated automatically a few seconds after you win.", "                                              To return to main menu, Press 'Esc'"]
+    text = ["                                                              Sokoban Rules","1. Objective: Push all the boxes into the holes.", "2. How to play: You can move player character using arrow keys.", "3. Winning Condition: Fill all the holes with boxes to win.", "4. New Map: A new map will be generated automatically a few seconds after you win.", "                                              To return to main menu, Press 'Esc'"]
     label = []
     position = [screen_width // 2 - 460, screen_height // 2 - 250]
     for line in text:
