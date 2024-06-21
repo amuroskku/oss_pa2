@@ -15,6 +15,7 @@ pygame.display.set_caption("Sokoban")
 
 # 색상 설정
 WHITE = (255, 255, 255)
+A_COLOR = (153, 204, 255)
 
 # 이미지 로드
 player_image = pygame.image.load('./assets/player.png')
@@ -35,6 +36,9 @@ BOX = '$'
 GOAL = '.'
 BOX_ON_GOAL = '*'
 PLAYER_ON_GOAL = '+'
+A_BOX = "A"
+A_GOAL = 'a'
+A_BOX_ON_GOAL = '%'
 
 # 방향 벡터
 DIRS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -66,6 +70,10 @@ def undo_move():
     if move_stack:
         level, player_pos = move_stack.pop()
 
+def recolor_image(orig_image, color):
+    image = orig_image.copy()  
+    image.fill(color + (255,), special_flags=pygame.BLEND_RGBA_MULT)  # Multiply RGB values by color and keep alpha
+    return image
 
 #비어있는 맵을 생성
 def create_empty_map(width, height):
@@ -73,7 +81,7 @@ def create_empty_map(width, height):
 
 #비어있는 맵에 플레이어와 구멍을 배치
 def place_player_and_goals(map_data, num_goals):
-    global player_pos
+    global player_pos, level_count
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR]
     random.shuffle(free_spaces)
 
@@ -87,7 +95,16 @@ def place_player_and_goals(map_data, num_goals):
     goals = []
     for _ in range(num_goals):
         goal_pos = free_spaces.pop()
-        map_data[goal_pos[0]][goal_pos[1]] = GOAL
+        if random.random() < 0.5:  # Example condition for assigning RED goals
+            map_data[goal_pos[0]][goal_pos[1]] = A_GOAL
+            box_type = A_BOX
+        else:
+            map_data[goal_pos[0]][goal_pos[1]] = GOAL
+            box_type = BOX
+        
+        # Place corresponding box
+        box_pos = free_spaces.pop()
+        map_data[box_pos[0]][box_pos[1]] = box_type
         goals.append(goal_pos)
     return player_pos, goals
 
@@ -99,7 +116,7 @@ def is_adjacent_to_wall(y, x, map_data):
 
 #벽에 붙어있지 않은 빈 공간에 상자를 위치
 def place_boxes(map_data, goals):
-    global goal_count
+    global goal_count, level_count
     
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR and not is_adjacent_to_wall(y, x, map_data)]
     random.shuffle(free_spaces)
@@ -129,10 +146,16 @@ def draw_level(map_data):
                 screen.blit(wall_image, (x * tile_size, y * tile_size))
             elif tile == GOAL:
                 screen.blit(goal_image, (x * tile_size, y * tile_size))
+            elif tile == A_GOAL:
+                screen.blit(recolor_image(goal_image, A_COLOR), (x * tile_size, y * tile_size))
             elif tile == BOX:
                 screen.blit(box_image, (x * tile_size, y * tile_size))
+            elif tile == A_BOX:
+                screen.blit(recolor_image(box_image, A_COLOR), (x * tile_size, y * tile_size))
             elif tile == BOX_ON_GOAL:
                 screen.blit(box_on_goal_image, (x * tile_size, y * tile_size))
+            elif tile ==A_BOX_ON_GOAL:
+                screen.blit(recolor_image(box_on_goal_image, A_COLOR), (x * tile_size, y * tile_size))
 
     font = pygame.font.SysFont(None, 50)
     text = font.render(f"Level: {level_count}\nMoves: {move_count}", True, (0, 0, 0))
@@ -146,51 +169,79 @@ def draw_player():
     
 #플레이어의 이동을 정의
 def move_player(dx, dy):
-    global level
-    global goal_count
-    global move_count
-    
+    global level, goal_count, move_count
+
     save_state()
-    
+
     new_x = player_pos[0] + dx
     new_y = player_pos[1] + dy
-    
-    if level[new_y][new_x] == " ":
-        # player가 있던 자리 공백으로 변환
-        level[player_pos[1]][player_pos[0]] = " "
-        #player 이동
+
+    if level[new_y][new_x] == FLOOR or level[new_y][new_x] == GOAL or level[new_y][new_x] == A_GOAL:
+        if level[new_y][new_x] == GOAL:
+            level[player_pos[1]][player_pos[0]] = GOAL
+        elif level[new_y][new_x] == A_GOAL:
+            level[player_pos[1]][player_pos[0]] = A_GOAL
+        else:
+            level[player_pos[1]][player_pos[0]] = FLOOR
+
         player_pos[0] = new_x
         player_pos[1] = new_y
-        level[player_pos[1]][player_pos[0]] = "@"
+
+        if level[player_pos[1]][player_pos[0]] == GOAL:
+            level[player_pos[1]][player_pos[0]] = PLAYER_ON_GOAL
+        elif level[player_pos[1]][player_pos[0]] == A_GOAL:
+            level[player_pos[1]][player_pos[0]] = A_BOX_ON_GOAL
+        else:
+            level[player_pos[1]][player_pos[0]] = PLAYER
+
         move_count += 1
-    elif level[new_y][new_x] == '$':
+
+    elif level[new_y][new_x] == BOX or level[new_y][new_x] == A_BOX:
         box_new_x = new_x + dx
         box_new_y = new_y + dy
-        if level[box_new_y][box_new_x] in " .":
-            level[new_y][new_x] = ' '
-            level[player_pos[1]][player_pos[0]] = " "
+
+        if level[box_new_y][box_new_x] == FLOOR or level[box_new_y][box_new_x] == GOAL or level[box_new_y][box_new_x] == A_GOAL:
+            if level[box_new_y][box_new_x] == GOAL:
+                level[new_y][new_x] = GOAL
+            elif level[box_new_y][box_new_x] == A_GOAL:
+                level[new_y][new_x] = A_GOAL
+            else:
+                level[new_y][new_x] = FLOOR
+
+            if level[new_y][new_x] == GOAL:
+                level[box_new_y][box_new_x] = BOX_ON_GOAL
+            elif level[new_y][new_x] == A_GOAL:
+                level[box_new_y][box_new_x] = A_BOX_ON_GOAL
+            else:
+                level[box_new_y][box_new_x] = BOX
+
             player_pos[0] = new_x
             player_pos[1] = new_y
-            level[player_pos[1]][player_pos[0]] = "@"
-            # 상자 이동
-            if level[box_new_y][box_new_x] == " ":
-                level[box_new_y][box_new_x] = '$'
-            elif level[box_new_y][box_new_x] == ".":
-                level[box_new_y][box_new_x] = '*'
-                goal_count -= 1
+
+            if level[player_pos[1]][player_pos[0]] == GOAL:
+                level[player_pos[1]][player_pos[0]] = PLAYER_ON_GOAL
+            elif level[player_pos[1]][player_pos[0]] == A_GOAL:
+                level[player_pos[1]][player_pos[0]] = A_BOX_ON_GOAL
+            else:
+                level[player_pos[1]][player_pos[0]] = PLAYER
+
             move_count += 1
+
+    is_win()
+
 
 #플레이어가 이겼는지 판단함
 def is_win():
     global goal_count, level_count
     if goal_count == 0:
-        font = pygame.font.SysFont(None, 100)
-        text = font.render("YOU WIN!", True, (255, 0, 0))
-        screen.blit(text, (screen_width // 2 - 200, screen_height // 2 - 50))
-        pygame.display.flip()
-        pygame.time.wait(2000)  # 2초간 대기
-        level_count += 1
-        reset_game()  # 게임 초기화 함수 호출
+        if all(level[y][x] == A_BOX_ON_GOAL for y, row in enumerate(level) for x, tile in enumerate(row)):
+            font = pygame.font.SysFont(None, 100)
+            text = font.render("YOU WIN!", True, (255, 0, 0))
+            screen.blit(text, (screen_width // 2 - 200, screen_height // 2 - 50))
+            pygame.display.flip()
+            pygame.time.wait(2000)  # 2초간 대기
+            level_count += 1
+            reset_game()  # 게임 초기화 함수 호출
 
 #새로운 맵을 생성하여 게임 리셋
 def reset_game():
