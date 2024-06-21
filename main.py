@@ -48,6 +48,7 @@ game_state = STATE_MENU
 level = []
 player_pos = [0, 0]
 goal_count = 0
+move_count = 0
 
 #undo를 위한 stack
 move_stack = deque()
@@ -130,6 +131,12 @@ def draw_level(map_data):
                 screen.blit(box_image, (x * tile_size, y * tile_size))
             elif tile == BOX_ON_GOAL:
                 screen.blit(box_on_goal_image, (x * tile_size, y * tile_size))
+
+    font = pygame.font.SysFont(None, 50)
+    text = font.render(f"Moves: {move_count}", True, (0, 0, 0))
+    screen.blit(text, (10, 10))
+
+    pygame.display.flip()
                 
 #화면에 플레이어를 표시함
 def draw_player():
@@ -139,6 +146,7 @@ def draw_player():
 def move_player(dx, dy):
     global level
     global goal_count
+    global move_count
     
     save_state()
     
@@ -152,6 +160,7 @@ def move_player(dx, dy):
         player_pos[0] = new_x
         player_pos[1] = new_y
         level[player_pos[1]][player_pos[0]] = "@"
+        move_count += 1
     elif level[new_y][new_x] == '$':
         box_new_x = new_x + dx
         box_new_y = new_y + dy
@@ -167,6 +176,7 @@ def move_player(dx, dy):
             elif level[box_new_y][box_new_x] == ".":
                 level[box_new_y][box_new_x] = '*'
                 goal_count -= 1
+            move_count += 1
 
 #플레이어가 이겼는지 판단함
 def is_win():
@@ -242,7 +252,7 @@ def run():
                     elif event.key == pygame.K_RIGHT:
                         move_player(1, 0)
                         is_win()
-                    elif event.key == pygame.K_u:
+                    elif event.key == pygame.K_BACKSPACE:
                         undo_move()
 
         screen.fill(WHITE)
