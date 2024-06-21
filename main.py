@@ -50,6 +50,7 @@ level = []
 player_pos = [0, 0]
 goal_count = 0
 move_count = 0
+level_count = 1
 
 #undo를 위한 stack
 move_stack = deque()
@@ -134,7 +135,7 @@ def draw_level(map_data):
                 screen.blit(box_on_goal_image, (x * tile_size, y * tile_size))
 
     font = pygame.font.SysFont(None, 50)
-    text = font.render(f"Moves: {move_count}", True, (0, 0, 0))
+    text = font.render(f"Level: {level_count}\nMoves: {move_count}", True, (0, 0, 0))
     screen.blit(text, (10, 10))
 
     pygame.display.flip()
@@ -181,19 +182,21 @@ def move_player(dx, dy):
 
 #플레이어가 이겼는지 판단함
 def is_win():
-    global goal_count
+    global goal_count, level_count
     if goal_count == 0:
         font = pygame.font.SysFont(None, 100)
         text = font.render("YOU WIN!", True, (255, 0, 0))
         screen.blit(text, (screen_width // 2 - 200, screen_height // 2 - 50))
         pygame.display.flip()
         pygame.time.wait(2000)  # 2초간 대기
+        level_count += 1
         reset_game()  # 게임 초기화 함수 호출
 
 #새로운 맵을 생성하여 게임 리셋
 def reset_game():
-    global level, player_pos
+    global level, player_pos, move_count
     level, player_pos = generate_sokoban_map(10, 10, 3)
+    move_count = 0
 
 #시작 메뉴를 표시
 def show_menu():
