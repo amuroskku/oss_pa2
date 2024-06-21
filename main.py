@@ -82,7 +82,7 @@ def create_empty_map(width, height):
 
 #비어있는 맵에 플레이어와 구멍을 배치
 def place_player_and_goals(map_data, num_goals):
-    global player_pos
+    global player_pos, level_count
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR]
     random.shuffle(free_spaces)
 
@@ -94,6 +94,11 @@ def place_player_and_goals(map_data, num_goals):
 
     # 목표 지점 선정
     goals = []
+    if level_count>=5:
+        goal_pos = free_spaces.pop()
+        map_data[goal_pos[0]][goal_pos[1]] = A_GOAL
+        goals.append(goal_pos)
+        num_goals -= 1
     for _ in range(num_goals):
         goal_pos = free_spaces.pop()
         map_data[goal_pos[0]][goal_pos[1]] = GOAL
@@ -113,6 +118,11 @@ def place_boxes(map_data, goals):
     free_spaces = [(y, x) for y, row in enumerate(map_data) for x, tile in enumerate(row) if tile == FLOOR and not is_adjacent_to_wall(y, x, map_data)]
     random.shuffle(free_spaces)
 
+    if level_count >=5:
+        box_pos = free_spaces.pop()
+        map_data[box_pos[0]][box_pos[1]] = A_BOX
+        goal_count += 1
+        goals.pop()
     for goal in goals:
         box_pos = free_spaces.pop()
         map_data[box_pos[0]][box_pos[1]] = BOX
@@ -208,7 +218,7 @@ def move_player(dx, dy):
             level[player_pos[1]][player_pos[0]] = "@"
             # 상자 이동
             if level[box_new_y][box_new_x] == " ":
-                level[box_new_y][box_new_x] = '$'
+                level[box_new_y][box_new_x] = 'A'
             elif level[box_new_y][box_new_x] == "a":
                 level[box_new_y][box_new_x] = '%'
                 goal_count -= 1
