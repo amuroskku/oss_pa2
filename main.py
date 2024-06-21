@@ -139,6 +139,9 @@ def draw_player():
 def move_player(dx, dy):
     global level
     global goal_count
+    
+    save_state()
+    
     new_x = player_pos[0] + dx
     new_y = player_pos[1] + dy
     
