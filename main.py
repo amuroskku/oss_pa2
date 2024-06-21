@@ -49,6 +49,21 @@ level = []
 player_pos = [0, 0]
 goal_count = 0
 
+#undo를 위한 stack
+move_stack = deque()
+
+#state 저장
+def save_state():
+    global level, player_pos
+    move_stack.append((copy.deepcopy(level), list(player_pos)))
+
+#undo
+def undo_move():
+    global level, player_pos
+    if move_stack:
+        level, player_pos = move_stack.pop()
+
+
 #비어있는 맵을 생성
 def create_empty_map(width, height):
     return [[WALL if x == 0 or x == width - 1 or y == 0 or y == height - 1 else FLOOR for x in range(width)] for y in range(height)]
@@ -224,6 +239,8 @@ def run():
                     elif event.key == pygame.K_RIGHT:
                         move_player(1, 0)
                         is_win()
+                    elif event.key == pygame.K_u:
+                        undo_move()
 
         screen.fill(WHITE)
         if game_state == STATE_MENU:
