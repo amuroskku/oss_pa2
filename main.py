@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import copy
 from collections import deque
 
 # Pygame 초기화
